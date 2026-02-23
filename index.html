@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>歡樂全球購 · 帳號工具</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0f1117; --surface:#1a1d27; --surface2:#22263a;
+  --accent:#4f8ef7; --accent2:#7c5cfc;
+  --green:#2dd4a0; --red:#f75f5f; --yellow:#f5c842;
+  --text:#e8eaf0; --muted:#7b82a0; --border:#2e3250;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(79,142,247,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(79,142,247,0.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+.wrapper{position:relative;z-index:1;max-width:980px;margin:0 auto;padding:36px 16px 60px;}
+
+/* ===== HEADER ===== */
+header{text-align:center;margin-bottom:28px;}
+.brand-name{font-size:clamp(28px,6vw,44px);font-weight:700;margin-bottom:14px;background:linear-gradient(135deg,#f7c94f,#f7914f,#f75f7c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:4px;line-height:1.2;}
+.badge{display:inline-block;background:linear-gradient(135deg,rgba(79,142,247,0.15),rgba(124,92,252,0.15));border:1px solid rgba(79,142,247,0.3);border-radius:100px;padding:4px 14px;font-size:11px;font-family:'DM Mono',monospace;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;}
+h1{font-size:clamp(20px,5vw,32px);font-weight:700;background:linear-gradient(135deg,#e8eaf0,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;}
+.subtitle{color:var(--muted);font-size:13px;}
+
+/* ===== STEP TABS ===== */
+.step-tabs{display:flex;gap:8px;margin-bottom:20px;}
+.step-tab{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;transition:all 0.2s;text-align:left;}
+.step-tab:hover{border-color:rgba(79,142,247,0.4);}
+.step-tab.active{border-color:var(--accent);background:rgba(79,142,247,0.08);}
+.step-tab .tab-num{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+.step-tab.active .tab-num{color:var(--accent);}
+.step-tab .tab-title{font-size:14px;font-weight:600;color:var(--text);}
+.step-tab .tab-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.step-tab .tab-check{display:none;font-size:12px;color:var(--green);margin-top:4px;font-family:'DM Mono',monospace;}
+.step-tab .tab-check.show{display:block;}
+
+/* ===== PANELS ===== */
+.panel{display:none;}
+.panel.active{display:block;}
+
+/* ===== STEP 1: 帳號國別查詢 ===== */
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;}
+.login-card .card-title{font-size:13px;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:18px;}
+.form-group{margin-bottom:14px;}
+.form-label{font-size:12px;color:var(--muted);margin-bottom:6px;display:block;}
+.form-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'Noto Sans TC',sans-serif;font-size:14px;outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
+.form-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,142,247,0.1);}
+.form-input::placeholder{color:var(--muted);}
+.pw-wrap{position:relative;}
+.pw-wrap .form-input{padding-right:44px;}
+.btn-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px;line-height:1;transition:color 0.15s;}
+.btn-eye:hover{color:var(--text);}
+.btn-query{width:100%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;border:none;border-radius:10px;padding:12px;font-family:'Noto Sans TC',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:opacity 0.2s,transform 0.1s;margin-top:4px;}
+.btn-query:hover{opacity:0.9;}
+.btn-query:active{transform:scale(0.98);}
+.btn-query:disabled{opacity:0.5;cursor:not-allowed;}
+
+/* ===== RESULT BOX ===== */
+.result-box{border-radius:14px;padding:18px 20px;margin-top:16px;display:none;animation:fadeIn 0.3s ease;}
+.result-box.success{background:rgba(45,212,160,0.1);border:1px solid rgba(45,212,160,0.3);}
+.result-box.error{background:rgba(247,95,95,0.1);border:1px solid rgba(247,95,95,0.2);}
+.result-box.loading{background:rgba(79,142,247,0.07);border:1px solid rgba(79,142,247,0.2);}
+.result-box.show{display:block;}
+.result-label{font-size:11px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.result-box.success .result-label{color:var(--green);}
+.result-box.error .result-label{color:var(--red);}
+.result-box.loading .result-label{color:var(--accent);}
+.result-country{font-size:24px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.result-meta{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;}
+.result-msg{font-size:14px;color:var(--text);line-height:1.6;}
+.loading-dots::after{content:'';animation:dots 1.2s infinite;}
+@keyframes dots{0%{content:'.';}33%{content:'..';}66%{content:'...';}100%{content:'';}}
+.btn-goto-step2{display:inline-flex;align-items:center;gap:6px;margin-top:14px;background:linear-gradient(135deg,var(--green),#1ab080);color:#0a1a14;border:none;border-radius:10px;padding:10px 20px;font-family:'Noto Sans TC',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:opacity 0.15s;}
+.btn-goto-step2:hover{opacity:0.88;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+
+/* ===== STEP 2: 產品查詢 ===== */
+.country-hint{display:none;background:rgba(45,212,160,0.08);border:1px solid rgba(45,212,160,0.25);border-radius:12px;padding:12px 16px;margin-bottom:16px;align-items:center;gap:12px;flex-wrap:wrap;}
+.country-hint.show{display:flex;}
+.ch-label{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
+.ch-val{font-size:14px;font-weight:700;color:var(--green);}
+.btn-clear-hint{margin-left:auto;background:none;border:1px solid var(--border);border-radius:8px;padding:4px 10px;color:var(--muted);font-size:11px;cursor:pointer;font-family:'DM Mono',monospace;transition:all 0.15s;}
+.btn-clear-hint:hover{border-color:var(--red);color:var(--red);}
+
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:4px 12px;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
+.stat span{color:var(--text);font-weight:500;}
+.search-panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:18px;}
+.panel-label{font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;}
+.product-rows{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.product-row{display:flex;align-items:center;gap:8px;animation:fadeIn 0.18s ease;}
+.row-num{width:22px;min-width:22px;height:22px;background:var(--surface2);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);}
+.ac-wrap{position:relative;flex:1;}
+.ac-wrap input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:9px 13px;color:var(--text);font-family:'Noto Sans TC',sans-serif;font-size:14px;outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
+.ac-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,142,247,0.1);}
+.ac-wrap input::placeholder{color:var(--muted);}
+.ac-wrap input.selected-input{border-color:rgba(79,142,247,0.4);background:rgba(79,142,247,0.07);}
+.dropdown{position:absolute;top:calc(100% + 5px);left:0;right:0;background:#1e2235;border:1px solid rgba(79,142,247,0.45);border-radius:10px;z-index:500;max-height:230px;overflow-y:auto;box-shadow:0 12px 32px rgba(0,0,0,0.55);display:none;}
+.dropdown.show{display:block;}
+.dd-item{padding:9px 13px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);transition:background 0.1s;}
+.dd-item:last-child{border-bottom:none;}
+.dd-item:hover,.dd-item.hover{background:rgba(79,142,247,0.13);}
+.dd-code{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);min-width:50px;}
+.dd-name{flex:1;color:var(--text);}
+.dd-name mark{background:rgba(79,142,247,0.28);color:var(--accent);border-radius:2px;padding:0 1px;font-style:normal;}
+.btn-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 4px;line-height:1;transition:color 0.15s;flex-shrink:0;}
+.btn-del:hover{color:var(--red);}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.btn-add{display:flex;align-items:center;gap:5px;background:var(--surface2);border:1px dashed var(--border);border-radius:10px;padding:8px 14px;color:var(--muted);font-family:'Noto Sans TC',sans-serif;font-size:13px;cursor:pointer;transition:all 0.15s;}
+.btn-add:hover{border-color:var(--accent);color:var(--accent);background:rgba(79,142,247,0.06);}
+.btn-search{background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;border:none;border-radius:10px;padding:9px 24px;font-family:'Noto Sans TC',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:opacity 0.2s,transform 0.1s;}
+.btn-search:hover{opacity:0.9;}
+.btn-search:active{transform:scale(0.97);}
+.btn-reset{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:9px 16px;color:var(--muted);font-family:'Noto Sans TC',sans-serif;font-size:13px;cursor:pointer;transition:all 0.15s;}
+.btn-reset:hover{border-color:var(--red);color:var(--red);}
+.quick-wrap{margin-bottom:20px;}
+.quick-label{font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);margin-bottom:8px;}
+.tags{display:flex;gap:6px;flex-wrap:wrap;}
+.tag{background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:4px 12px;font-size:12px;color:var(--muted);cursor:pointer;transition:all 0.15s;}
+.tag:hover{border-color:var(--accent);color:var(--accent);background:rgba(79,142,247,0.08);}
+#results{display:none;}
+.result-header{margin-bottom:14px;}
+.result-title{font-size:13px;color:var(--muted);font-family:'DM Mono',monospace;}
+.result-title strong{color:var(--accent);}
+.compare-wrap{overflow-x:auto;margin-bottom:20px;}
+.compare-table{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;min-width:400px;}
+.ct-head{display:grid;background:var(--surface2);border-bottom:1px solid var(--border);padding:12px 16px;gap:8px;align-items:start;}
+.ct-head-country{font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:0.5px;padding-top:4px;}
+.prod-head{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.prod-head-code{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+.prod-head-name{font-size:12px;color:var(--text);word-break:break-all;line-height:1.4;}
+.ct-row{display:grid;padding:10px 16px;gap:8px;align-items:center;border-bottom:1px solid var(--border);transition:background 0.1s;}
+.ct-row:last-child{border-bottom:none;}
+.ct-row:hover{background:rgba(255,255,255,0.02);}
+.ct-row.my-country{background:rgba(45,212,160,0.06);border-left:2px solid var(--green);}
+.ct-country{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;}
+.ct-flag{font-size:17px;}
+.my-tag{font-size:10px;color:var(--green);font-family:'DM Mono',monospace;background:rgba(45,212,160,0.12);border:1px solid rgba(45,212,160,0.25);border-radius:100px;padding:1px 7px;}
+.ct-status{font-size:18px;text-align:center;}
+.ct-status.ok{filter:drop-shadow(0 0 4px rgba(45,212,160,0.35));}
+.ct-status.no{opacity:0.45;}
+.ct-status.warn{filter:drop-shadow(0 0 4px rgba(245,200,66,0.35));}
+.summary-row{display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px;border-top:1px solid var(--border);background:rgba(0,0,0,0.12);}
+.mini-badge{font-size:11px;font-family:'DM Mono',monospace;padding:3px 9px;border-radius:100px;}
+.mini-badge.ok{background:rgba(45,212,160,0.12);color:var(--green);border:1px solid rgba(45,212,160,0.2);}
+.mini-badge.no{background:rgba(247,95,95,0.1);color:var(--red);border:1px solid rgba(247,95,95,0.18);}
+.mini-badge.warn{background:rgba(245,200,66,0.1);color:var(--yellow);border:1px solid rgba(245,200,66,0.2);}
+.no-res{text-align:center;padding:48px 20px;color:var(--muted);}
+.no-res .icon{font-size:36px;margin-bottom:10px;}
+.cross-panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px;}
+.cross-title{padding:14px 18px;border-bottom:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;gap:10px;}
+.cross-title-text{font-size:13px;font-weight:600;color:var(--text);}
+.cross-title-sub{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
+.cross-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;padding:16px;}
+.cross-card{border-radius:12px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:6px;border:1px solid transparent;transition:transform 0.15s,box-shadow 0.15s;cursor:default;}
+.cross-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.3);}
+.cross-card.all-ok{background:rgba(45,212,160,0.1);border-color:rgba(45,212,160,0.3);}
+.cross-card.part-ok{background:rgba(245,200,66,0.08);border-color:rgba(245,200,66,0.25);}
+.cross-card.all-no{background:rgba(247,95,95,0.06);border-color:rgba(247,95,95,0.15);opacity:0.55;}
+.cross-card-detail{font-size:11px;color:var(--muted);line-height:1.5;}
+.cross-card-bar{height:3px;border-radius:10px;margin-top:4px;background:var(--border);overflow:hidden;}
+.cross-card-bar-fill{height:100%;border-radius:10px;transition:width 0.4s ease;}
+.cross-card.all-ok .cross-card-bar-fill{background:var(--green);}
+.cross-card.part-ok .cross-card-bar-fill{background:var(--yellow);}
+.cross-card.all-no .cross-card-bar-fill{background:var(--red);}
+.cross-section{border-bottom:1px solid var(--border);}
+.cross-section:last-child{border-bottom:none;}
+.cross-section-head{display:flex;align-items:center;gap:8px;padding:10px 18px;font-size:13px;border-bottom:1px solid var(--border);}
+.cross-section-head.head-ok{background:rgba(45,212,160,0.08);}
+.cross-section-head.head-part{background:rgba(245,200,66,0.07);}
+.cross-section-head.head-no{background:rgba(247,95,95,0.06);}
+.cross-section-title{font-weight:600;flex:1;}
+.cross-section-head.head-ok .cross-section-title{color:var(--green);}
+.cross-section-head.head-part .cross-section-title{color:var(--yellow);}
+.cross-section-head.head-no .cross-section-title{color:var(--red);}
+.cross-section-count{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
+.cross-empty{padding:16px 18px;font-size:13px;color:var(--muted);font-style:italic;}
+.cross-card-name{font-size:13px;font-weight:600;color:var(--text);}
+
+footer{text-align:center;margin-top:40px;color:var(--muted);font-size:11px;font-family:'DM Mono',monospace;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <header>
+    <div class="brand-name">歡樂全球購</div>
+    <div class="badge">ATOMY ACCOUNT TOOLKIT</div>
+    <h1>帳號國別確認 × 購買資格查詢</h1>
+    <p class="subtitle">輸入帳號密碼自動查詢國別 · 再查詢該國可購產品</p>
+  </header>
+
+  <!-- ===== STEP TABS ===== -->
+  <div class="step-tabs">
+    <div class="step-tab active" id="tab1" onclick="switchTab(1)">
+      <div class="tab-num">STEP 01</div>
+      <div class="tab-title">確認帳號國別</div>
+      <div class="tab-sub">輸入帳號密碼自動查詢</div>
+      <div class="tab-check" id="tab1check">✅ 已確認：<span id="tab1country"></span></div>
+    </div>
+    <div class="step-tab" id="tab2" onclick="switchTab(2)">
+      <div class="tab-num">STEP 02</div>
+      <div class="tab-title">查詢可購買產品</div>
+      <div class="tab-sub">多產品交叉比對</div>
+    </div>
+  </div>
+
+  <!-- ===== PANEL 1: 帳號國別 ===== -->
+  <div class="panel active" id="panel1">
+    <div class="login-card">
+      <div class="card-title">登入 Atomy TW · 自動讀取國別</div>
+      <div class="form-group">
+        <label class="form-label">會員編號</label>
+        <input class="form-input" type="text" id="inputAccount" placeholder="例如 S8535961 或 47461182" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label class="form-label">密碼</label>
+        <div class="pw-wrap">
+          <input class="form-input" type="password" id="inputPassword" placeholder="請輸入密碼">
+          <button class="btn-eye" id="eyeBtn" onclick="togglePw()">👁</button>
+        </div>
+      </div>
+      <button class="btn-query" id="queryBtn" onclick="doCheckCountry()">🔍 查詢帳號國別</button>
+
+      <div class="result-box" id="resultBox">
+        <div class="result-label" id="resultLabel"></div>
+        <div id="resultBody"></div>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;font-size:12px;color:var(--muted);line-height:1.8;">
+      🔒 帳號密碼僅用於查詢，透過 HTTPS 加密傳輸，不會被儲存。查詢完成後瀏覽器不會保留任何登入狀態。
+    </div>
+  </div>
+
+  <!-- ===== PANEL 2: 產品查詢 ===== -->
+  <div class="panel" id="panel2">
+    <!-- 國別提示條 -->
+    <div class="country-hint" id="countryHint">
+      <div>
+        <div class="ch-label">已確認帳號國家</div>
+        <div class="ch-val" id="hintCountryText">—</div>
+      </div>
+      <button class="btn-clear-hint" onclick="clearHint()">✕ 取消</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat">共 <span>78</span> 項產品</div>
+      <div class="stat">涵蓋 <span>10</span> 個國家/地區</div>
+      <div class="stat">新增 <span>🇺🇿 烏茲別克</span></div>
+    </div>
+
+    <div class="search-panel">
+      <div class="panel-label">選擇產品（最多8項，可同時比對）</div>
+      <div class="product-rows" id="productRows"></div>
+      <div class="row-actions">
+        <button class="btn-add" onclick="addRow()">＋ 新增產品欄位</button>
+        <button class="btn-search" onclick="doSearch()">🔍 開始查詢</button>
+        <button class="btn-reset" onclick="resetAll()">重置</button>
+      </div>
+    </div>
+
+    <div class="quick-wrap">
+      <div class="quick-label">快速搜尋</div>
+      <div class="tags" id="quickTags"></div>
+    </div>
+
+    <div id="results"></div>
+  </div>
+
+  <footer>資料來源：各國帳號韓貨可購買清單表.xlsx &nbsp;|&nbsp; 78 筆產品 · 10 個國家</footer>
+</div>
+
+<script>
+// ==================== CONFIG ====================
+// ⚠️ 部署後把這裡換成你的 Cloud Run URL
+const API_URL = 'https://haigogo-productlookup-717129878037.us-central1.run.app';
+
+// ==================== DATA ====================
+const COUNTRIES=['全球帳號','土耳其','蒙古','印尼','烏茲別克','台灣','德國','日本','泰國','馬來西亞'];
+const FLAGS={'全球帳號':'🌍','土耳其':'🇹🇷','蒙古':'🇲🇳','印尼':'🇮🇩','烏茲別克':'🇺🇿','台灣':'🇹🇼','德國':'🇩🇪','日本':'🇯🇵','泰國':'🇹🇭','馬來西亞':'🇲🇾'};
+const QUICK=['魚油','益生菌','維他命','紅蔘','鈣片','膠原蛋白','凝萃','兒童','蜂蜜飲','纖體'];
+const PRODUCTS=[{"id":"000014","name":"蜂蜜飲30包","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"🚫","印尼":"🚫","烏茲別克":"🚫","台灣":"🚫","德國":"🚫","日本":"🚫","泰國":"✅","馬來西亞":"🚫"}},{"id":"000011","name":"蜂蜜飲60包","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"🚫","印尼":"🚫","烏茲別克":"🚫","台灣":"🚫","德國":"🚫","日本":"🚫","泰國":"🚫","馬來西亞":"🚫"}},{"id":"000013","name":"蜂蜜飲120包","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"🚫","印尼":"🚫","烏茲別克":"🚫","台灣":"🚫","德國":"🚫","日本":"🚫","泰國":"🚫","馬來西亞":"🚫"}},{"id":"000121","name":"500mg維他命c粉","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"🚫","印尼":"🚫","烏茲別克":"🚫","台灣":"🚫","德國":"🚫","日本":"🚫","泰國":"🚫","馬來西亞":"🚫"}},{"id":"004030","name":"2000mg維他命c粉","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"🚫"}},{"id":"000129","name":"鳳梨酵素再升級版","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"🚫","烏茲別克":"✅","台灣":"🚫","德國":"✅","日本":"🚫","泰國":"✅","馬來西亞":"✅"}},{"id":"000111","name":"高濃度魚油膠囊","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"🚫","印尼":"✅","烏茲別克":"🚫","台灣":"🚫","德國":"🚫","日本":"🚫","泰國":"🚫","馬來西亞":"✅"}},{"id":"000184","name":"兒童魚油","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"004041","name":"RTG魚油","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"🚫","泰國":"✅","馬來西亞":"✅"}},{"id":"004004","name":"B群","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"✅","印尼":"🚫","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"004073","name":"維生素D3+K2","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"000164","name":"益生菌","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"🚫","印尼":"✅","烏茲別克":"✅","台灣":"🚫","德國":"✅","日本":"🚫","泰國":"🚫","馬來西亞":"🚫"}},{"id":"004051","name":"SCI腸道益生菌膠囊","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"🚫","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"004052","name":"兒童益生菌","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"🚫","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"004001","name":"三合一綜合鈣","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"🚫","泰國":"✅","馬來西亞":"✅"}},{"id":"000150","name":"牛奶鈣片","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"000182","name":"納豆銀杏葉","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"🚫","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"000171","name":"鋸葉棕櫚軟膠囊(男寶)","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"🚫","台灣":"✅","德國":"✅","日本":"🚫","泰國":"✅","馬來西亞":"✅"}},{"id":"000172","name":"槐花女王軟膠囊(女寶)","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"🚫","台灣":"✅","德國":"✅","日本":"🚫","泰國":"✅","馬來西亞":"✅"}},{"id":"004074","name":"男性紅蔘千里光","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"000185","name":"MSM薑黃錠","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"🚫","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"004053","name":"兒童維生素軟糖","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"🚫"}},{"id":"000108","name":"紅蔘","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"✅","印尼":"🚫","烏茲別克":"✅","台灣":"🚫","德國":"✅","日本":"🚫","泰國":"🚫","馬來西亞":"✅"}},{"id":"000187","name":"韓國紅蔘果凍","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"000188","name":"檸檬葉酸","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"004007","name":"護眼寶(素食)","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"🚫","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"🚫","泰國":"✅","馬來西亞":"🚫"}},{"id":"004071","name":"升級版海藻油","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"004008","name":"膠原蛋白飲","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"🚫","日本":"✅","泰國":"✅","馬來西亞":"🚫"}},{"id":"004040","name":"益腦片","data":{"全球帳號":"⚠️","土耳其":"⚠️","蒙古":"⚠️","印尼":"⚠️","烏茲別克":"⚠️","台灣":"⚠️","德國":"⚠️","日本":"⚠️","泰國":"⚠️","馬來西亞":"⚠️"}},{"id":"004039","name":"顧胃寶","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"🚫"}},{"id":"004072","name":"車前子膳食纖維粉","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"🚫","烏茲別克":"✅","台灣":"🚫","德國":"✅","日本":"🚫","泰國":"✅","馬來西亞":"✅"}},{"id":"004025","name":"舒眠牛奶胜肽","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"004016","name":"青蘋果多酚果凍","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"🚫","印尼":"✅","烏茲別克":"✅","台灣":"🚫","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"🚫"}},{"id":"004022","name":"女性益生菌","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"004080","name":"女性益生菌四盒組","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"004015","name":"鐵粉","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"🚫","泰國":"✅","馬來西亞":"🚫"}},{"id":"004031","name":"生物素","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"004029","name":"巴納巴紅蔘","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"🚫"}},{"id":"004044","name":"三倍蛋白粉","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"🚫","馬來西亞":"🚫"}},{"id":"004027","name":"兒童紅蔘","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"004026","name":"紅蔘精華液","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"004043","name":"綜合維生素能量飲","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"🚫"}},{"id":"000170","name":"諾麗果汁(瓶裝)","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"🚫","德國":"🚫","日本":"🚫","泰國":"✅","馬來西亞":"🚫"}},{"id":"000120","name":"諾麗果隨身包","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"🚫","德國":"🚫","日本":"🚫","泰國":"✅","馬來西亞":"🚫"}},{"id":"004050","name":"人蔘地黃茯苓養生飲","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"004079","name":"血糖苦瓜粉","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"000180","name":"普洱茶","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"🚫","印尼":"🚫","烏茲別克":"🚫","台灣":"🚫","德國":"🚫","日本":"🚫","泰國":"🚫","馬來西亞":"🚫"}},{"id":"000178","name":"螺旋藻","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"✅","印尼":"🚫","烏茲別克":"🚫","台灣":"🚫","德國":"🚫","日本":"🚫","泰國":"🚫","馬來西亞":"✅"}},{"id":"000173","name":"韓國葉黃素","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"🚫","台灣":"🚫","德國":"✅","日本":"🚫","泰國":"✅","馬來西亞":"🚫"}},{"id":"000174","name":"紅景天奶薊","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"🚫","德國":"✅","日本":"🚫","泰國":"✅","馬來西亞":"🚫"}},{"id":"000183","name":"紅石榴果凍","data":{"全球帳號":"⚠️","土耳其":"⚠️","蒙古":"⚠️","印尼":"⚠️","烏茲別克":"⚠️","台灣":"⚠️","德國":"⚠️","日本":"⚠️","泰國":"⚠️","馬來西亞":"⚠️"}},{"id":"004068","name":"大黃丸","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"🚫","泰國":"✅","馬來西亞":"✅"}},{"id":"000965","name":"穀物飲","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"🚫","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"000148","name":"纖活2.0四種口味(原味/綠茶/南瓜/可可)","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"🚫","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"🚫"}},{"id":"004064","name":"纖體奶昔2.0大包裝1200克","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"004078","name":"特級綜合營養素膠囊","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"021720","name":"保健營養攜帶包(藍盒-男性綜合營養包)","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"021721","name":"保健營養攜帶包(紅盒-女性綜合營養包)","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"021722","name":"保健營養攜帶包(橘盒-中年活力包)","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"021723","name":"保健營養攜帶包(紫盒-基礎營養包)","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"✅","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"✅"}},{"id":"000486","name":"凝萃精油精華噴霧","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"🚫","烏茲別克":"✅","台灣":"✅","德國":"✅","日本":"🚫","泰國":"✅","馬來西亞":"🚫"}},{"id":"000003","name":"經典保養五件組(全球/韓國帳號限定)","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"🚫","印尼":"🚫","烏茲別克":"🚫","台灣":"🚫","德國":"🚫","日本":"🚫","泰國":"🚫","馬來西亞":"🚫"}},{"id":"000190","name":"經典化妝水(全球/韓國帳號限定)","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"🚫","印尼":"🚫","烏茲別克":"🚫","台灣":"🚫","德國":"🚫","日本":"🚫","泰國":"🚫","馬來西亞":"🚫"}},{"id":"000192","name":"經典眼霜(全球/韓國帳號限定)","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"🚫","印尼":"🚫","烏茲別克":"🚫","台灣":"🚫","德國":"🚫","日本":"🚫","泰國":"🚫","馬來西亞":"🚫"}},{"id":"000194","name":"經典精華液(全球/韓國帳號限定)","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"🚫","印尼":"🚫","烏茲別克":"✅","台灣":"🚫","德國":"🚫","日本":"🚫","泰國":"🚫","馬來西亞":"🚫"}},{"id":"000196","name":"經典乳液(全球/韓國帳號限定)","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"🚫","印尼":"🚫","烏茲別克":"🚫","台灣":"🚫","德國":"🚫","日本":"🚫","泰國":"🚫","馬來西亞":"🚫"}},{"id":"000198","name":"經典營養霜(全球/韓國帳號限定)","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"🚫","印尼":"🚫","烏茲別克":"🚫","台灣":"🚫","德國":"🚫","日本":"🚫","泰國":"🚫","馬來西亞":"🚫"}},{"id":"000207","name":"凝萃六部曲(全球/韓國帳號限定)","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"🚫","印尼":"🚫","烏茲別克":"🚫","台灣":"🚫","德國":"🚫","日本":"🚫","泰國":"🚫","馬來西亞":"🚫"}},{"id":"000207","name":"凝萃六部曲兩盒組(全球/韓國帳號)","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"🚫","印尼":"🚫","烏茲別克":"🚫","台灣":"🚫","德國":"🚫","日本":"🚫","泰國":"🚫","馬來西亞":"🚫"}},{"id":"000217","name":"凝萃化妝水(全球/韓國帳號限定)","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"🚫","印尼":"🚫","烏茲別克":"✅","台灣":"🚫","德國":"🚫","日本":"🚫","泰國":"🚫","馬來西亞":"🚫"}},{"id":"000227","name":"凝萃安瓶(全球/韓國帳號限定)","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"🚫","印尼":"🚫","烏茲別克":"🚫","台灣":"🚫","德國":"🚫","日本":"🚫","泰國":"🚫","馬來西亞":"🚫"}},{"id":"000227","name":"凝萃安瓶四瓶組(全球/韓國帳號限定)","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"🚫","印尼":"🚫","烏茲別克":"🚫","台灣":"🚫","德國":"🚫","日本":"🚫","泰國":"🚫","馬來西亞":"🚫"}},{"id":"000237","name":"凝萃精華液(全球/韓國帳號限定)","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"🚫","印尼":"🚫","烏茲別克":"✅","台灣":"🚫","德國":"🚫","日本":"🚫","泰國":"🚫","馬來西亞":"🚫"}},{"id":"000247","name":"凝萃乳液(全球/韓國帳號限定)","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"🚫","印尼":"🚫","烏茲別克":"✅","台灣":"🚫","德國":"🚫","日本":"🚫","泰國":"🚫","馬來西亞":"🚫"}},{"id":"000257","name":"凝萃眼霜(全球/韓國帳號限定)","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"🚫","印尼":"🚫","烏茲別克":"🚫","台灣":"🚫","德國":"🚫","日本":"🚫","泰國":"🚫","馬來西亞":"🚫"}},{"id":"000267","name":"凝萃營養霜(全球/韓國帳號限定)","data":{"全球帳號":"✅","土耳其":"🚫","蒙古":"🚫","印尼":"🚫","烏茲別克":"🚫","台灣":"🚫","德國":"🚫","日本":"🚫","泰國":"🚫","馬來西亞":"🚫"}},{"id":"000482","name":"深層卸妝油","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"✅","印尼":"🚫","烏茲別克":"✅","台灣":"🚫","德國":"✅","日本":"✅","泰國":"✅","馬來西亞":"🚫"}},{"id":"000266","name":"珠光隔離乳","data":{"全球帳號":"✅","土耳其":"✅","蒙古":"🚫","印尼":"🚫","烏茲別克":"✅","台灣":"🚫","德國":"✅","日本":"🚫","泰國":"🚫","馬來西亞":"🚫"}}];
+
+// ==================== STATE ====================
+let confirmedCountry = null;
+let rows = []; let rc = 0;
+
+// ==================== TAB SWITCH ====================
+function switchTab(n) {
+  document.querySelectorAll('.step-tab').forEach((t,i) => t.classList.toggle('active', i+1===n));
+  document.querySelectorAll('.panel').forEach((p,i) => p.classList.toggle('active', i+1===n));
+  if (n === 2) initStep2();
+}
+
+// ==================== STEP 1: 帳號國別 ====================
+function togglePw() {
+  const inp = document.getElementById('inputPassword');
+  const btn = document.getElementById('eyeBtn');
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+  else { inp.type = 'password'; btn.textContent = '👁'; }
+}
+
+async function doCheckCountry() {
+  const account = document.getElementById('inputAccount').value.trim();
+  const password = document.getElementById('inputPassword').value.trim();
+  const btn = document.getElementById('queryBtn');
+  const box = document.getElementById('resultBox');
+
+  if (!account || !password) {
+    showResult('error', '⚠️ 請輸入帳號', '帳號和密碼都必須填寫');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '查詢中，請稍候...';
+  showResult('loading', '🔄 查詢中', '<span class="loading-dots">正在登入 Atomy TW，讀取帳號國別</span>');
+
+  try {
+    const res = await fetch(`${API_URL}/check-country`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ account, password }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      confirmedCountry = data.country;
+      const flag = FLAGS[data.country] || '🏳️';
+
+      // 更新 tab1 標記
+      document.getElementById('tab1check').classList.add('show');
+      document.getElementById('tab1country').textContent = `${flag} ${data.country}`;
+
+      showResult('success', '✅ 查詢成功', `
+        <div style="font-size:28px;margin-bottom:6px;">${flag} <strong style="font-size:22px;color:var(--green);">${data.country}</strong></div>
+        <div style="font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:14px;">
+          會員編號：${data.memberId}　原始國別：${data.countryRaw}
+        </div>
+        <button class="btn-goto-step2" onclick="gotoStep2()">🛒 查看 ${data.country} 可購買產品 →</button>
+      `);
+    } else {
+      showResult('error', '❌ 查詢失敗', `<div class="result-msg">${data.error}</div>`);
+    }
+  } catch (e) {
+    showResult('error', '❌ 連線錯誤', '<div class="result-msg">無法連接到伺服器，請確認網路或稍後再試</div>');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '🔍 查詢帳號國別';
+}
+
+function showResult(type, label, body) {
+  const box = document.getElementById('resultBox');
+  box.className = `result-box ${type} show`;
+  document.getElementById('resultLabel').textContent = label;
+  document.getElementById('resultBody').innerHTML = body;
+}
+
+function gotoStep2() {
+  switchTab(2);
+  if (confirmedCountry) {
+    const hint = document.getElementById('countryHint');
+    const hintText = document.getElementById('hintCountryText');
+    hintText.innerHTML = `${FLAGS[confirmedCountry] || ''} ${confirmedCountry}`;
+    hint.classList.add('show');
+  }
+}
+
+// ==================== STEP 2 INIT ====================
+let step2Inited = false;
+function initStep2() {
+  if (step2Inited) return;
+  step2Inited = true;
+  const te = document.getElementById('quickTags');
+  QUICK.forEach(k => {
+    const t = document.createElement('span');
+    t.className = 'tag'; t.textContent = k;
+    t.onclick = () => quickSearch(k);
+    te.appendChild(t);
+  });
+  addRow(); addRow();
+}
+
+function clearHint() {
+  document.getElementById('countryHint').classList.remove('show');
+  confirmedCountry = null;
+}
+
+// ==================== PRODUCT SEARCH ====================
+function addRow() {
+  if (rows.length >= 8) return;
+  const container = document.getElementById('productRows');
+  const idx = rows.length; const rid = ++rc;
+  const div = document.createElement('div');
+  div.className = 'product-row'; div.id = 'pr-' + rid;
+  div.innerHTML = `
+    <div class="row-num">${idx + 1}</div>
+    <div class="ac-wrap" id="acw-${rid}">
+      <input type="text" id="inp-${rid}" placeholder="輸入關鍵字搜尋產品..." autocomplete="off">
+      <div class="dropdown" id="drp-${rid}"></div>
+    </div>
+    ${idx > 0 ? `<button class="btn-del" onclick="removeRow(${rid})" title="刪除">✕</button>` : ''}
+  `;
+  container.appendChild(div);
+  const inp = document.getElementById('inp-' + rid);
+  const drp = document.getElementById('drp-' + rid);
+  const rs = { rid, inp, drp, sel: null, hi: -1 };
+  rows.push(rs);
+  inp.addEventListener('input', () => { rs.sel = null; inp.classList.remove('selected-input'); showDrop(rs); });
+  inp.addEventListener('keydown', e => onKey(e, rs));
+  inp.addEventListener('focus', () => { if (inp.value && !rs.sel) showDrop(rs); });
+  document.addEventListener('click', e => { if (!document.getElementById('acw-' + rid)?.contains(e.target)) hideDrop(rs); });
+  updateNums();
+}
+
+function removeRow(rid) {
+  const i = rows.findIndex(r => r.rid === rid);
+  if (i < 0) return;
+  rows.splice(i, 1);
+  document.getElementById('pr-' + rid)?.remove();
+  updateNums();
+}
+
+function updateNums() {
+  rows.forEach((r, i) => {
+    const n = document.querySelector('#pr-' + r.rid + ' .row-num');
+    if (n) n.textContent = i + 1;
+  });
+}
+
+function getMatches(kw) {
+  if (!kw.trim()) return [];
+  const q = kw.toLowerCase();
+  return PRODUCTS.filter(p => p.name.toLowerCase().includes(q) || p.id.includes(q)).slice(0, 12);
+}
+
+function hl(text, kw) {
+  if (!kw) return text;
+  return text.replace(new RegExp('(' + kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'), '<mark>$1</mark>');
+}
+
+function showDrop(rs) {
+  const kw = rs.inp.value;
+  const m = getMatches(kw);
+  if (!m.length) { hideDrop(rs); return; }
+  rs.hi = -1; rs.drp._m = m;
+  rs.drp.innerHTML = m.map((p, i) => `<div class="dd-item" data-i="${i}" onmousedown="selProd(${rs.rid},${i})"><span class="dd-code">${p.id}</span><span class="dd-name">${hl(p.name, kw)}</span></div>`).join('');
+  rs.drp.classList.add('show');
+}
+
+function hideDrop(rs) { rs.drp.classList.remove('show'); rs.hi = -1; }
+
+function selProd(rid, idx) {
+  const rs = rows.find(r => r.rid === rid);
+  if (!rs) return;
+  const p = rs.drp._m?.[idx];
+  if (!p) return;
+  rs.sel = p; rs.inp.value = p.name;
+  rs.inp.classList.add('selected-input');
+  hideDrop(rs);
+}
+
+function onKey(e, rs) {
+  if (!rs.drp.classList.contains('show')) return;
+  const items = rs.drp.querySelectorAll('.dd-item');
+  if (!items.length) return;
+  if (e.key === 'ArrowDown') { e.preventDefault(); rs.hi = Math.min(rs.hi + 1, items.length - 1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); rs.hi = Math.max(rs.hi - 1, 0); }
+  else if (e.key === 'Enter') { e.preventDefault(); selProd(rs.rid, rs.hi >= 0 ? rs.hi : 0); return; }
+  else if (e.key === 'Escape') { hideDrop(rs); return; }
+  items.forEach((el, i) => el.classList.toggle('hover', i === rs.hi));
+  if (rs.hi >= 0) items[rs.hi].scrollIntoView({ block: 'nearest' });
+}
+
+function quickSearch(kw) {
+  const empty = rows.find(r => !r.sel && !r.inp.value) || rows[0];
+  empty.inp.value = kw; empty.sel = null;
+  empty.inp.classList.remove('selected-input');
+  showDrop(empty); empty.inp.focus();
+}
+
+function doSearch() {
+  const picked = [];
+  rows.forEach(rs => {
+    if (rs.sel) { picked.push(rs.sel); }
+    else if (rs.inp.value.trim()) { const m = getMatches(rs.inp.value.trim()); if (m.length) picked.push(m[0]); }
+  });
+  const uniq = picked.filter((p, i, a) => a.findIndex(x => x.name === p.name && x.id === p.id) === i);
+  const cont = document.getElementById('results');
+  cont.style.display = 'block';
+
+  if (!uniq.length) {
+    cont.innerHTML = `<div class="no-res"><div class="icon">🔍</div><p>請輸入至少一個產品名稱</p></div>`;
+    cont.scrollIntoView({ behavior: 'smooth', block: 'start' }); return;
+  }
+
+  const colT = `150px ${uniq.map(() => '1fr').join(' ')}`;
+  const heads = uniq.map(p => `<div class="prod-head"><span class="prod-head-code">${p.id}</span><span class="prod-head-name">${p.name}</span></div>`).join('');
+
+  const bodyRows = COUNTRIES.map(c => {
+    const isMine = confirmedCountry === c;
+    const cells = uniq.map(p => {
+      const s = p.data[c];
+      const cls = s === '✅' ? 'ok' : s === '⚠️' ? 'warn' : 'no';
+      return `<div class="ct-status ${cls}">${s}</div>`;
+    }).join('');
+    return `<div class="ct-row${isMine ? ' my-country' : ''}" style="grid-template-columns:${colT}">
+      <div class="ct-country"><span class="ct-flag">${FLAGS[c]}</span>${c}${isMine ? ' <span class="my-tag">我的帳號</span>' : ''}</div>
+      ${cells}
+    </div>`;
+  }).join('');
+
+  const summary = uniq.map(p => {
+    const ok = COUNTRIES.filter(c => p.data[c] === '✅').length;
+    const no = COUNTRIES.filter(c => p.data[c] === '🚫').length;
+    const w = COUNTRIES.filter(c => p.data[c] === '⚠️').length;
+    const nm = p.name.length > 10 ? p.name.slice(0, 10) + '…' : p.name;
+    return `<span style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-right:2px;">${nm}：</span>${ok ? `<span class="mini-badge ok">✅ ${ok}國</span>` : ''}${no ? `<span class="mini-badge no">🚫 ${no}國</span>` : ''}${w ? `<span class="mini-badge warn">⚠️ ${w}國</span>` : ''}`;
+  }).join('<span style="margin:0 6px;color:var(--border)">|</span>');
+
+  const grpAll = [], grpPart = [], grpNo = [];
+  COUNTRIES.forEach(c => {
+    const okCount = uniq.filter(p => p.data[c] === '✅').length;
+    const noProds = uniq.filter(p => p.data[c] === '🚫');
+    const total = uniq.length;
+    const pct = Math.round(okCount / total * 100);
+    const isMine = confirmedCountry === c;
+    const card = `
+      <div class="cross-card ${okCount === total ? 'all-ok' : okCount === 0 ? 'all-no' : 'part-ok'}">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:22px">${FLAGS[c]}</span>
+          <span class="cross-card-name">${c}</span>
+          ${isMine ? '<span style="font-size:10px;color:var(--green);font-family:\'DM Mono\',monospace;">← 我</span>' : ''}
+        </div>
+        ${okCount > 0 && okCount < total ? `<div class="cross-card-detail">❌ 無法：${noProds.map(p => p.name.length > 8 ? p.name.slice(0, 8) + '…' : p.name).join('、')}</div>` : ''}
+        <div class="cross-card-bar"><div class="cross-card-bar-fill" style="width:${pct}%"></div></div>
+      </div>`;
+    if (okCount === total) grpAll.push(card);
+    else if (okCount === 0) grpNo.push(card);
+    else grpPart.push(card);
+  });
+
+  function mkSection(icon, title, count, cards, cls, emptyMsg) {
+    if (!cards.length && !emptyMsg) return '';
+    return `<div class="cross-section">
+      <div class="cross-section-head ${cls}"><span>${icon}</span><span class="cross-section-title">${title}</span><span class="cross-section-count">${count} 個帳號</span></div>
+      ${cards.length ? `<div class="cross-grid">${cards.join('')}</div>` : `<div class="cross-empty">${emptyMsg}</div>`}
+    </div>`;
+  }
+
+  cont.innerHTML = `
+    <div class="result-header"><div class="result-title">查詢 <strong>${uniq.length}</strong> 項產品 ✕ <strong>${COUNTRIES.length}</strong> 個國家</div></div>
+    <div class="cross-panel">
+      <div class="cross-title">
+        <span style="font-size:18px">🔀</span>
+        <div>
+          <div class="cross-title-text">交叉比對結果</div>
+          <div class="cross-title-sub">全部可買 <strong style="color:var(--green)">${grpAll.length}</strong> 個 &nbsp;·&nbsp; 部分可買 <strong style="color:var(--yellow)">${grpPart.length}</strong> 個 &nbsp;·&nbsp; 全不可買 <strong style="color:var(--red)">${grpNo.length}</strong> 個</div>
+        </div>
+      </div>
+      ${mkSection('✅','全部產品皆可購買',grpAll.length,grpAll,'head-ok','沒有帳號能購買全部所選產品')}
+      ${mkSection('⚠️','部分產品可購買',grpPart.length,grpPart,'head-part','')}
+      ${grpNo.length ? mkSection('🚫','全部不可購買',grpNo.length,grpNo,'head-no','') : ''}
+    </div>
+    <div class="compare-wrap">
+      <div class="compare-table">
+        <div class="ct-head" style="grid-template-columns:${colT}"><div class="ct-head-country">國家 / 帳號</div>${heads}</div>
+        ${bodyRows}
+        <div class="summary-row">${summary}</div>
+      </div>
+    </div>`;
+  cont.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function resetAll() {
+  rows.forEach(r => { r.inp.value = ''; r.sel = null; r.inp.classList.remove('selected-input'); hideDrop(r); });
+  document.getElementById('results').style.display = 'none';
+}
+
+// Enter 鍵觸發查詢
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('panel1').classList.contains('active')) {
+    if (document.activeElement === document.getElementById('inputAccount') ||
+        document.activeElement === document.getElementById('inputPassword')) {
+      doCheckCountry();
+    }
+  }
+});
+</script>
+</body>
+</html>
